@@ -99,8 +99,9 @@ header{background:var(--basil);color:var(--cream);position:relative;z-index:1}
 .derived{border-top:1.5px solid var(--hair);margin-top:22px;padding-top:18px;display:flex;gap:26px}
 .derived div{font-family:var(--display);font-size:22px;font-weight:600;line-height:1.15}
 .derived span{display:block;font-family:var(--text);font-size:11.5px;color:var(--basil-soft);font-weight:400;margin-top:2px}
+.assume{margin:12px 0 0;font-size:12px;color:var(--basil-soft);line-height:1.45}
 .go{
-  width:100%;margin-top:22px;padding:14px;background:var(--saffron);color:var(--basil);
+  width:100%;margin-top:16px;padding:14px;background:var(--saffron);color:var(--basil);
   border:0;border-radius:12px;font-family:var(--text);font-weight:700;font-size:15px;cursor:pointer;
   transition:transform .12s, box-shadow .16s;box-shadow:0 3px 0 #C9862A;
 }
@@ -126,12 +127,15 @@ header{background:var(--basil);color:var(--cream);position:relative;z-index:1}
 .slot{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--basil-soft);margin-bottom:10px;font-weight:600;letter-spacing:.02em;line-height:1.3}
 .slot .chip{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none}
 .dish{font-family:var(--display);font-size:17.5px;font-weight:500;line-height:1.28;margin-bottom:11px;letter-spacing:-.01em}
-.dials{list-style:none;padding:0;margin:0 0 13px;display:flex;flex-wrap:wrap;gap:6px}
-.dials li{font-size:12.5px;background:var(--oat);color:var(--basil);padding:4px 10px;border-radius:20px;font-weight:500}
-.dials li.minus{background:#F6E6E2;color:var(--tomato)}
-.dials li.scale{background:#E7EFE6;color:#3D6B4C}
+.ing{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 13px}
+.ing span{font-size:12.5px;background:var(--oat);color:var(--basil-soft);padding:4px 10px;border-radius:20px}
+.ing span b{color:var(--basil);font-weight:700}
+.ing span.adj{background:#E7EFE6;color:#3D6B4C}
+.ing span.adj b{color:#2F5D3A}
 .macro{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--basil-soft);border-top:1.5px solid var(--hair);padding-top:11px;font-variant-numeric:tabular-nums}
 .macro b{color:var(--basil);font-weight:700;font-size:14px}
+.macro .plated{color:var(--herb)}
+.macro .plated b{color:#4E7A5C}
 
 /* ---------- label ---------- */
 .label{margin-top:38px;background:var(--oat);border-radius:20px;padding:28px}
@@ -211,9 +215,10 @@ footer{background:var(--basil);color:#9DB8A8;padding:26px 0 40px;font-size:12.5p
     </div>
 
     <div class="derived">
-      <div id="dKcal">2570<span>kcal/day target</span></div>
-      <div id="dProtein">137 g<span>protein/day target</span></div>
+      <div id="dKcal">1748<span>kcal, lunch + dinner</span></div>
+      <div id="dProtein">103 g<span>protein, lunch + dinner</span></div>
     </div>
+    <p class="assume">Assumes a standard healthy breakfast.</p>
 
     <button class="go" id="go">Cook up my week</button>
   </aside>
@@ -281,31 +286,58 @@ const TINTS=["#E8A33A","#7FA37F","#C25640","#7A4B63","#4E6F60"];
 
 /* ---------------- menu data ---------------- */
 const DISHES=[
- {n:"Peri-peri grilled chicken, red rice, charred beans",k:520,p:48,c:52,f:12,d:"nonveg",dinner:true,i:"chilli"},
- {n:"Assamese chicken curry with joha rice",k:560,p:42,c:60,f:16,d:"nonveg",dinner:true,i:"bowl"},
- {n:"Naga pork with bamboo shoot, steamed rice",k:610,p:38,c:55,f:26,d:"nonveg",dinner:true,i:"chilli"},
- {n:"Grilled fish, lemon quinoa, greens",k:480,p:44,c:42,f:14,d:"nonveg",dinner:true,i:"lemon"},
- {n:"Chicken shawarma bowl, garlic yoghurt",k:540,p:46,c:48,f:17,d:"nonveg",dinner:true,i:"bowl"},
- {n:"Thai basil chicken, jasmine rice",k:570,p:44,c:58,f:16,d:"nonveg",dinner:true,i:"leaf"},
- {n:"Shakshuka with seeded sourdough",k:430,p:24,c:38,f:20,d:"egg",dinner:false,i:"egg"},
- {n:"Turkish eggs, whipped labneh, toast",k:400,p:22,c:30,f:21,d:"egg",dinner:false,i:"egg"},
- {n:"Masala baked eggs, millet toast",k:440,p:26,c:36,f:21,d:"egg",dinner:false,i:"egg"},
- {n:"Paneer bhurji, millet roti, kachumber",k:500,p:34,c:42,f:21,d:"veg",dinner:true,i:"wheat"},
- {n:"Rajma, brown rice, cucumber salad",k:520,p:24,c:72,f:12,d:"veg",dinner:true,i:"bowl"},
- {n:"Tofu bibimbap bowl",k:480,p:30,c:56,f:14,d:"veg",dinner:true,i:"avocado"},
- {n:"Chana masala, jeera rice, greens",k:490,p:22,c:70,f:11,d:"veg",dinner:true,i:"leaf"},
- {n:"Soya keema, pav, salad",k:510,p:36,c:54,f:14,d:"veg",dinner:true,i:"tomato"},
- {n:"Greek yoghurt, berries, toasted granola",k:380,p:28,c:44,f:10,d:"veg",dinner:false,i:"wheat"}
+ {n:"Peri-peri grilled chicken, red rice, charred beans",k:520,p:48,c:52,f:12,d:"nonveg",dinner:true,i:"chilli",g:"red rice",o:"olive oil",
+  ing:[["chicken breast",170],["red rice",150],["charred green beans",110],["peri-peri rub",10],["olive oil",8]]},
+ {n:"Assamese chicken curry with joha rice",k:560,p:42,c:60,f:16,d:"nonveg",dinner:true,i:"bowl",g:"joha rice",o:"mustard oil",
+  ing:[["chicken on the bone",150],["joha rice",180],["onion tomato masala",90],["mustard oil",10]]},
+ {n:"Naga pork with bamboo shoot, steamed rice",k:610,p:38,c:55,f:26,d:"nonveg",dinner:true,i:"chilli",g:"steamed rice",o:"mustard oil",
+  ing:[["pork shoulder",140],["steamed rice",170],["bamboo shoot",80],["raja chilli and garlic",12],["mustard oil",8]]},
+ {n:"Grilled fish, lemon quinoa, greens",k:480,p:44,c:42,f:14,d:"nonveg",dinner:true,i:"lemon",g:"lemon quinoa",o:"olive oil",
+  ing:[["basa fillet",180],["lemon quinoa",140],["seasonal greens",120],["olive oil",8]]},
+ {n:"Chicken shawarma bowl, garlic yoghurt",k:540,p:46,c:48,f:17,d:"nonveg",dinner:true,i:"bowl",g:"spiced rice",o:"tahini",
+  ing:[["shawarma chicken",165],["spiced rice",150],["cucumber tomato salad",100],["garlic yoghurt",60],["tahini",10]]},
+ {n:"Thai basil chicken, jasmine rice",k:570,p:44,c:58,f:16,d:"nonveg",dinner:true,i:"leaf",g:"jasmine rice",o:"sesame oil",
+  ing:[["chicken mince",160],["jasmine rice",180],["beans and peppers",100],["thai basil and garlic",12],["sesame oil",10]]},
+ {n:"Shakshuka with seeded sourdough",k:430,p:24,c:38,f:20,d:"egg",dinner:false,i:"egg",g:"seeded sourdough",o:"olive oil",
+  ing:[["eggs",100],["tomato and pepper base",200],["seeded sourdough",70],["feta",25],["olive oil",10]]},
+ {n:"Turkish eggs, whipped labneh, toast",k:400,p:22,c:30,f:21,d:"egg",dinner:false,i:"egg",g:"seeded toast",o:"olive oil",
+  ing:[["eggs",100],["whipped labneh",90],["seeded toast",60],["chilli butter",8],["olive oil",10]]},
+ {n:"Masala baked eggs, millet toast",k:440,p:26,c:36,f:21,d:"egg",dinner:false,i:"egg",g:"millet toast",o:"ghee",
+  ing:[["eggs",100],["onion tomato masala",160],["millet toast",65],["ghee",8]]},
+ {n:"Paneer bhurji, millet roti, kachumber",k:500,p:34,c:42,f:21,d:"veg",dinner:true,i:"wheat",g:"millet roti",o:"ghee",
+  ing:[["paneer",130],["millet roti",90],["onion and tomato",80],["kachumber",90],["ghee",8]]},
+ {n:"Rajma, brown rice, cucumber salad",k:520,p:24,c:72,f:12,d:"veg",dinner:true,i:"bowl",g:"brown rice",o:"ghee",
+  ing:[["rajma",180],["brown rice",170],["cucumber salad",100],["ghee",7]]},
+ {n:"Tofu bibimbap bowl",k:480,p:30,c:56,f:14,d:"veg",dinner:true,i:"avocado",g:"steamed rice",o:"sesame oil",
+  ing:[["firm tofu",150],["steamed rice",170],["pickled vegetables",130],["gochujang",15],["sesame oil",8]]},
+ {n:"Chana masala, jeera rice, greens",k:490,p:22,c:70,f:11,d:"veg",dinner:true,i:"leaf",g:"jeera rice",o:"ghee",
+  ing:[["chana",170],["jeera rice",175],["sauteed greens",100],["ghee",7]]},
+ {n:"Soya keema, pav, salad",k:510,p:36,c:54,f:14,d:"veg",dinner:true,i:"tomato",g:"pav",o:"ghee",
+  ing:[["soya keema",160],["pav",100],["onion masala",70],["salad",80],["ghee",7]]},
+ {n:"Greek yoghurt, berries, toasted granola",k:380,p:28,c:44,f:10,d:"veg",dinner:false,i:"wheat",g:"toasted granola",o:"almond butter",
+  ing:[["greek yoghurt",200],["berries",90],["toasted granola",50],["almond butter",8]]}
 ];
 const DIALS=[
- {n:"boiled egg",k:78,p:6.3,c:.6,f:5.3,d:"egg",max:3},
- {n:"50 g grilled chicken",k:82,p:15.5,c:0,f:2,d:"nonveg",max:3},
- {n:"40 g paneer",k:116,p:7.2,c:1.2,f:9,d:"veg",max:3},
- {n:"whey scoop",k:120,p:24,c:3,f:1.5,d:"veg",max:1},
- {n:"60 g cooked grain",k:78,p:1.6,c:17,f:.2,d:"veg",max:4},
- {n:"15 g almonds",k:87,p:3.2,c:3.3,f:7.5,d:"veg",max:2},
- {n:"5 g ghee",k:45,p:0,c:0,f:5,d:"veg",max:2}
+ {id:"egg",  k:78, p:6.3,c:.6, f:5.3,d:"egg",   max:3, q:1, ingN:"boiled eggs", ingG:50},
+ {id:"chick",k:82, p:15.5,c:0, f:2,  d:"nonveg",max:3, q:50, ingN:"grilled chicken", ingG:50},
+ {id:"pan",  k:116,p:7.2,c:1.2,f:9,  d:"veg",   max:3, q:40, ingN:"paneer", ingG:40},
+ {id:"whey", k:120,p:24, c:3,  f:1.5,d:"veg",   max:1, q:1, ingN:"whey", ingG:30},
+ {id:"grain",k:78, p:1.6,c:17, f:.2, d:"veg",   max:4, q:60, ingN:null, ingG:60, grain:true},
+ {id:"alm",  k:87, p:3.2,c:3.3,f:7.5,d:"veg",   max:2, q:15, ingN:"almonds", ingG:15},
+ {id:"fat",  k:45, p:0,  c:0,  f:5,  d:"veg",   max:2, q:5, ingN:null, ingG:5, fat:true}
 ];
+function buildIng(base,scale,used){
+  const list=base.ing.map(([n,g])=>({n,g:Math.round(g*scale),adj:false}));
+  used.forEach(u=>{
+    const name = u.d.ingN || (u.d.fat ? base.o : base.g);
+    const add  = u.d.ingG * u.n;
+    const hit  = list.find(x=>x.n===name);
+    if(hit){ hit.g+=add; hit.adj=true; }
+    else   { list.push({n:name,g:add,adj:true}); }
+  });
+  return list;
+}
+
 function chip(icon,tint){
   return '<span class="chip" style="background:'+tint+'22"><svg viewBox="0 0 40 40" width="13" height="13" style="fill:'+tint+';color:'+tint+'">'+SHAPES[icon]+'</svg></span>';
 }
@@ -348,9 +380,8 @@ function greedy(base,s,tK,tP){
     const d=energy.find(x=>x.used<x.max && tK-cur.k>=x.k*0.65); if(!d)break;
     d.used++;n++;cur.k+=d.k;cur.p+=d.p;cur.c+=d.c;cur.f+=d.f;
   }
-  const adds=[];
-  pool.forEach(d=>{ if(d.used) adds.push({t:(d.used>1?d.used+" \u00d7 ":"")+d.n,minus:false}); });
-  return {cur,adds,n};
+  const used=pool.filter(d=>d.used).map(d=>({d,n:d.used}));
+  return {cur,used,n};
 }
 function fit(base,tK,tP){
   let best=null;
@@ -360,19 +391,16 @@ function fit(base,tK,tP){
     const score=Math.abs(g.cur.k-tK)+14*Math.abs(g.cur.p-tP)+30*g.n+40*Math.abs(sc-1);
     if(!best||score<best.score) best={...g,scale:sc,score};
   }
-  const adds=[...best.adds];
-  if(best.scale!==1) adds.unshift({t:"portion \u00d7"+best.scale.toFixed(2),minus:false,scale:true});
-  return {cur:best.cur,adds};
+  return {cur:best.cur,ing:buildIng(base,best.scale,best.used)};
 }
 function render(){
   const t=targets();
-  $("#dKcal").innerHTML=t.k+"<span>kcal/day target</span>";
-  $("#dProtein").innerHTML=t.p+" g<span>protein/day target</span>";
-
   const lunchPool=DISHES.filter(d=>allowed(d.d));
   const dinnerPool=DISHES.filter(d=>allowed(d.d)&&d.dinner);
   const lr=rota(lunchPool.length,7), dr=rota(dinnerPool.length,23);
   const planK=Math.round(t.k*SHARE_K), planP=Math.round(t.p*SHARE_P);
+  $("#dKcal").innerHTML=planK+"<span>kcal, lunch + dinner</span>";
+  $("#dProtein").innerHTML=planP+" g<span>protein, lunch + dinner</span>";
   let html="",sumK=0,sumP=0,sumDev=0,sticker=null;
 
   DAYS.forEach((day,i)=>{
@@ -383,13 +411,13 @@ function render(){
     const dayK=Math.round(rL.cur.k+rD.cur.k), dayP=Math.round(rL.cur.p+rD.cur.p);
     const dev=dayK-planK, devP=dayP-planP;
     sumK+=dayK;sumP+=dayP;sumDev+=Math.abs(dev);
-    if(i===2)sticker={dish:D.n,r:rD.cur};
+    if(i===2)sticker={dish:D.n,r:rD.cur,ing:rD.ing};
 
     const meal=(slot,dish,r,tint)=>`<div class="meal">
       <div class="slot">${chip(dish.i,tint)}${slot}</div>
       <div class="dish">${dish.n}</div>
-      ${r.adds.length?`<ul class="dials">${r.adds.map(a=>`<li class="${a.minus?"minus":""}${a.scale?" scale":""}">${a.t}</li>`).join("")}</ul>`:""}
-      <div class="macro"><span><b>${Math.round(r.cur.k)}</b> kcal</span><span><b>${Math.round(r.cur.p)}</b> g protein</span><span><b>${Math.round(r.cur.c)}</b> g carbohydrate</span><span><b>${Math.round(r.cur.f)}</b> g fat</span></div>
+      <div class="ing">${r.ing.map(x=>`<span class="${x.adj?"adj":""}"><b>${x.g} g</b> ${x.n}</span>`).join("")}</div>
+      <div class="macro"><span><b>${Math.round(r.cur.k)}</b> kcal</span><span><b>${Math.round(r.cur.p)}</b> g protein</span><span><b>${Math.round(r.cur.c)}</b> g carbohydrate</span><span><b>${Math.round(r.cur.f)}</b> g fat</span><span class="plated"><b>${r.ing.reduce((a,x)=>a+x.g,0)}</b> g on the plate</span></div>
     </div>`;
 
     html+=`<article class="day">
@@ -415,7 +443,7 @@ function render(){
   if(sticker){
     const r=sticker.r;
     $("#sDish").textContent=sticker.dish.length>26?sticker.dish.slice(0,26)+"\u2026":sticker.dish;
-    $("#sWeight").textContent=Math.round(r.k*0.78)+" g";
+    $("#sWeight").textContent=sticker.ing.reduce((a,x)=>a+x.g,0)+" g";
     $("#sP").textContent=Math.round(r.p)+" g";
     $("#sC").textContent=Math.round(r.c)+" g";
     $("#sF").textContent=Math.round(r.f)+" g";
