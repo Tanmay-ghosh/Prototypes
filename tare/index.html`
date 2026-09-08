@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tare — meals weighed to your number</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --basil:#25453A;        /* deep herb green, the ink */
+  --basil-soft:#4E6F60;
+  --cream:#FFFCF5;        /* page */
+  --oat:#F6EEDF;          /* warm panel tint */
+  --shell:#FFFFFF;        /* cards */
+  --saffron:#E8A33A;
+  --tomato:#C25640;
+  --herb:#7FA37F;
+  --plum:#7A4B63;
+  --hair:#E8DFCD;
+  --display:'Fraunces',Georgia,'Times New Roman',serif;
+  --text:'Karla',system-ui,-apple-system,sans-serif;
+  --shadow:0 2px 3px rgba(37,69,58,.04), 0 8px 22px rgba(37,69,58,.06);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--cream);color:var(--basil);
+  font-family:var(--text);font-size:15.5px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 26px;position:relative;z-index:1}
+
+/* ---------- ambient food layer ---------- */
+#garden{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#garden svg{position:absolute;opacity:.5;animation:drift linear infinite}
+@keyframes drift{
+  0%  {transform:translate3d(0,14px,0) rotate(0deg)}
+  50% {transform:translate3d(10px,-16px,0) rotate(7deg)}
+  100%{transform:translate3d(0,14px,0) rotate(0deg)}
+}
+@media (prefers-reduced-motion:reduce){ #garden svg{animation:none} }
+
+/* ---------- masthead ---------- */
+header{background:var(--basil);color:var(--cream);position:relative;z-index:1}
+.mast{display:flex;align-items:baseline;gap:20px;padding:26px 0}
+.logo{font-family:var(--display);font-weight:600;font-size:clamp(38px,5vw,54px);letter-spacing:-.025em;line-height:1}
+.logo em{font-style:normal;color:var(--saffron)}
+.tagline{font-size:15px;color:#A9C0B2}
+.placeholder{margin-left:auto;font-size:11.5px;color:#78907F}
+@media(max-width:700px){.mast{flex-wrap:wrap;gap:8px 16px}.placeholder{margin-left:0;flex-basis:100%}}
+
+/* ---------- hero ---------- */
+.hero{padding:60px 0 46px}
+.hero h1{
+  font-family:var(--display);font-weight:500;font-size:clamp(32px,5.2vw,56px);
+  line-height:1.04;margin:0 0 20px;max-width:15ch;letter-spacing:-.022em;
+}
+.hero p{max-width:58ch;margin:0;color:var(--basil-soft);font-size:16.5px}
+
+/* ---------- the readout ---------- */
+.readout-bar{
+  margin-top:40px;background:var(--basil);color:var(--cream);
+  border-radius:20px;padding:30px 34px;display:flex;flex-wrap:wrap;gap:38px;align-items:flex-end;
+  box-shadow:0 14px 34px rgba(37,69,58,.16);
+}
+.gauge{display:flex;flex-direction:column;gap:5px}
+.gauge .k{font-size:11.5px;color:#9DB8A8;letter-spacing:.04em}
+.gauge .v{font-family:var(--display);font-size:38px;font-weight:500;line-height:1;font-variant-numeric:tabular-nums}
+.gauge .v small{font-family:var(--text);font-size:14px;color:#9DB8A8;margin-left:4px;font-weight:400}
+.gauge.hi .v{color:var(--saffron)}
+.readout-bar .verdict{margin-left:auto;text-align:right;font-family:var(--display);font-size:17.5px;max-width:26ch;line-height:1.4;color:#DCE9DF}
+
+/* ---------- layout ---------- */
+.grid{display:grid;grid-template-columns:342px 1fr;gap:44px;padding:48px 0 80px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr;gap:34px}}
+
+/* ---------- spec ---------- */
+.spec{background:var(--oat);border-radius:20px;padding:26px 24px;position:sticky;top:24px;box-shadow:var(--shadow)}
+@media(max-width:900px){.spec{position:static}}
+.spec h2{font-family:var(--display);font-size:21px;margin:0 0 5px;font-weight:600}
+.spec .lead{font-size:13.5px;color:var(--basil-soft);margin:0 0 22px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:12.5px;color:var(--basil-soft);margin-bottom:7px;font-weight:500}
+.field input[type=number]{
+  width:100%;padding:11px 13px;border:1.5px solid var(--hair);border-radius:11px;
+  font-family:var(--text);font-size:16px;background:var(--shell);color:var(--basil);font-weight:500;
+}
+.field input:focus-visible,.seg button:focus-visible,.go:focus-visible{outline:2.5px solid var(--saffron);outline-offset:2px}
+.seg{display:flex;gap:6px}
+.seg button{
+  flex:1;padding:10px 4px;border:1.5px solid var(--hair);background:var(--shell);
+  border-radius:11px;font-family:var(--text);font-size:12.5px;color:var(--basil-soft);cursor:pointer;
+  font-weight:500;transition:background .16s,color .16s,border-color .16s;
+}
+.seg button:hover{border-color:var(--herb)}
+.seg button[aria-pressed=true]{background:var(--basil);color:var(--cream);border-color:var(--basil)}
+.derived{border-top:1.5px solid var(--hair);margin-top:22px;padding-top:18px;display:flex;gap:26px}
+.derived div{font-family:var(--display);font-size:22px;font-weight:600;line-height:1.15}
+.derived span{display:block;font-family:var(--text);font-size:11.5px;color:var(--basil-soft);font-weight:400;margin-top:2px}
+.go{
+  width:100%;margin-top:22px;padding:14px;background:var(--saffron);color:var(--basil);
+  border:0;border-radius:12px;font-family:var(--text);font-weight:700;font-size:15px;cursor:pointer;
+  transition:transform .12s, box-shadow .16s;box-shadow:0 3px 0 #C9862A;
+}
+.go:hover{transform:translateY(-1px);box-shadow:0 4px 0 #C9862A}
+.go:active{transform:translateY(2px);box-shadow:0 1px 0 #C9862A}
+
+/* ---------- plan ---------- */
+.planhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.planhead h2{font-family:var(--display);font-size:25px;margin:0;font-weight:600}
+.cycle{font-size:12px;color:var(--basil-soft);background:var(--oat);padding:5px 11px;border-radius:20px}
+.day{background:var(--shell);border-radius:18px;margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow)}
+.daybar{display:flex;align-items:center;gap:16px;padding:14px 22px;background:var(--oat);flex-wrap:wrap}
+.dayname{font-family:var(--display);font-size:18px;font-weight:600;min-width:96px}
+.tally{margin-left:auto;display:flex;gap:20px;font-size:13px;font-variant-numeric:tabular-nums;color:var(--basil-soft)}
+.tally b{font-weight:700;color:var(--basil);font-size:14.5px}
+.tally .d{color:var(--herb);font-weight:600}
+.tally .d.warn{color:var(--tomato)}
+.meals{display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:680px){.meals{grid-template-columns:1fr}}
+.meal{padding:19px 22px 21px}
+.meal+.meal{box-shadow:inset 1.5px 0 0 var(--hair)}
+@media(max-width:680px){.meal+.meal{box-shadow:inset 0 1.5px 0 var(--hair)}}
+.slot{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--basil-soft);margin-bottom:10px;font-weight:600;letter-spacing:.02em;line-height:1.3}
+.slot .chip{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;flex:none}
+.dish{font-family:var(--display);font-size:17.5px;font-weight:500;line-height:1.28;margin-bottom:11px;letter-spacing:-.01em}
+.dials{list-style:none;padding:0;margin:0 0 13px;display:flex;flex-wrap:wrap;gap:6px}
+.dials li{font-size:12.5px;background:var(--oat);color:var(--basil);padding:4px 10px;border-radius:20px;font-weight:500}
+.dials li.minus{background:#F6E6E2;color:var(--tomato)}
+.dials li.scale{background:#E7EFE6;color:#3D6B4C}
+.macro{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--basil-soft);border-top:1.5px solid var(--hair);padding-top:11px;font-variant-numeric:tabular-nums}
+.macro b{color:var(--basil);font-weight:700;font-size:14px}
+
+/* ---------- label ---------- */
+.label{margin-top:38px;background:var(--oat);border-radius:20px;padding:28px}
+.label h3{font-family:var(--display);font-size:20px;margin:0 0 7px;font-weight:600}
+.label p{margin:0 0 20px;font-size:14px;color:var(--basil-soft);max-width:64ch}
+.sticker{border-radius:12px;padding:18px 20px;max-width:355px;background:var(--shell);box-shadow:var(--shadow);border-top:5px solid var(--saffron)}
+.sticker .brand{font-family:var(--display);font-weight:600;font-size:16px;margin-bottom:11px}
+.sticker table{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.sticker td{padding:5px 0;border-bottom:1px solid var(--hair);color:var(--basil-soft)}
+.sticker td:last-child{text-align:right;font-weight:700;color:var(--basil)}
+.sticker tr:last-child td{border-bottom:0;padding-top:9px;font-weight:700;color:var(--basil)}
+.sticker .foot{margin-top:11px;font-size:10.5px;color:var(--basil-soft);line-height:1.45}
+footer{background:var(--basil);color:#9DB8A8;padding:26px 0 40px;font-size:12.5px;position:relative;z-index:1}
+</style>
+</head>
+<body>
+
+<div id="garden" aria-hidden="true"></div>
+
+<header>
+  <div class="wrap mast">
+    <div class="logo">Ta<em>re</em></div>
+    <div class="tagline">Meals weighed to your number</div>
+    <div class="placeholder">working name, swap freely</div>
+  </div>
+</header>
+
+<section class="wrap hero">
+  <h1>Your macros, hit exactly. Twice a day, six days a week.</h1>
+  <p>Tell us one number and we cook the week around it. The kitchen runs twice a day, so lunch is cooked for lunch and dinner is cooked for dinner. Nothing is held from the morning and nothing is reheated. Between them the two meals carry about two thirds of your day. Every portion is weighed before it is sealed, and the plan adjusts with real food, an extra egg or a smaller scoop of rice, rather than asking you to do the arithmetic.</p>
+
+  <div class="readout-bar">
+    <div class="gauge"><div class="k">DELIVERED TARGET</div><div class="v" id="gTarget">1748<small>kcal</small></div></div>
+    <div class="gauge"><div class="k">PLANNED</div><div class="v" id="gPlanned">1748<small>kcal</small></div></div>
+    <div class="gauge hi"><div class="k">AVERAGE DEVIATION</div><div class="v" id="gDelta">0<small>kcal</small></div></div>
+    <div class="gauge"><div class="k">PROTEIN DELIVERED</div><div class="v" id="gProtein">0<small>g</small></div></div>
+    <div class="verdict" id="verdict">Set your numbers and cook up a week.</div>
+  </div>
+</section>
+
+<div class="wrap grid">
+
+  <aside class="spec">
+    <h2>Your spec</h2>
+    <p class="lead">Four inputs. Nothing else is asked of you, ever.</p>
+
+    <div class="field">
+      <label for="weight">Body weight (kg)</label>
+      <input type="number" id="weight" value="72" min="35" max="180">
+    </div>
+
+    <div class="field">
+      <label>Goal</label>
+      <div class="seg" id="goal" role="group" aria-label="Goal">
+        <button data-v="cut" aria-pressed="false">Lose fat</button>
+        <button data-v="maintain" aria-pressed="true">Maintain</button>
+        <button data-v="gain" aria-pressed="false">Build</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Kitchen</label>
+      <div class="seg" id="diet" role="group" aria-label="Diet">
+        <button data-v="nonveg" aria-pressed="true">Non-veg</button>
+        <button data-v="egg" aria-pressed="false">Egg only</button>
+        <button data-v="veg" aria-pressed="false">Veg</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Training load</label>
+      <div class="seg" id="activity" role="group" aria-label="Training load">
+        <button data-v="1.35" aria-pressed="false">Light</button>
+        <button data-v="1.55" aria-pressed="true">3 to 5</button>
+        <button data-v="1.75" aria-pressed="false">Daily</button>
+      </div>
+    </div>
+
+    <div class="derived">
+      <div id="dKcal">2570<span>kcal/day target</span></div>
+      <div id="dProtein">137 g<span>protein/day target</span></div>
+    </div>
+
+    <button class="go" id="go">Cook up my week</button>
+  </aside>
+
+  <main>
+    <div class="planhead">
+      <h2>Week of 14 September</h2>
+      <span class="cycle" id="cycle">menu cycle, day 1 to 6 of 14</span>
+    </div>
+    <div id="plan"></div>
+
+    <section class="label">
+      <h3>What arrives on the box</h3>
+      <p>The guarantee is only worth something if it is checkable. Every container is sealed with the weighed values for that exact box, never a menu average, and a batch from each cycle goes to an accredited lab so the numbers rest on something other than our word.</p>
+      <div class="sticker" id="sticker">
+        <div class="brand">Tare &middot; Wednesday dinner service</div>
+        <table>
+          <tr><td>Dish</td><td id="sDish">&mdash;</td></tr>
+          <tr><td>Portion, sealed weight</td><td id="sWeight">&mdash;</td></tr>
+          <tr><td>Protein</td><td id="sP">&mdash;</td></tr>
+          <tr><td>Carbohydrate</td><td id="sC">&mdash;</td></tr>
+          <tr><td>Fat</td><td id="sF">&mdash;</td></tr>
+          <tr><td>Energy</td><td id="sK">&mdash;</td></tr>
+        </table>
+        <div class="foot">Cooked and weighed at 18:15. Evening batch B-118. Verified against lab assay 22 August. Eat within two hours.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="wrap">Prototype for conversation, not a live service. Macro figures are representative and would be lab-verified per recipe before launch.</footer>
+
+<script>
+/* ---------------- ambient food layer ---------------- */
+const SHAPES={
+  egg:'<ellipse cx="20" cy="21" rx="13" ry="16"/>',
+  chilli:'<path d="M28 8c2 6-1 14-7 19S9 34 8 32c4-1 9-4 13-9s5-11 7-15z"/><path d="M27 7c1-3 4-3 5-1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+  leaf:'<path d="M33 7C18 7 7 16 7 30c0 2 1 3 3 3 14 0 23-11 23-26z"/><path d="M28 12 11 29" fill="none" stroke="#FFFCF5" stroke-width="2"/>',
+  lemon:'<circle cx="20" cy="20" r="14"/><path d="M20 6v28M6 20h28M10 10l20 20M30 10 10 30" fill="none" stroke="#FFFCF5" stroke-width="1.6"/>',
+  bowl:'<path d="M5 18h30c0 9-7 15-15 15S5 27 5 18z"/><path d="M12 13c0-3 4-3 4-6M22 13c0-4 5-4 5-8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+  tomato:'<circle cx="20" cy="23" r="13"/><path d="M20 10c-4-3-8-2-9 0 3 0 5 1 6 3 1-2 2-3 3-3z" />',
+  wheat:'<path d="M20 34V12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20 14c-5-1-7-4-7-7 4 0 7 3 7 7zm0 0c5-1 7-4 7-7-4 0-7 3-7 7zm0 8c-5-1-7-4-7-7 4 0 7 3 7 7zm0 0c5-1 7-4 7-7-4 0-7 3-7 7z"/>',
+  avocado:'<path d="M20 5c8 0 13 8 13 16s-6 14-13 14S7 29 7 21 12 5 20 5z"/><ellipse cx="20" cy="23" rx="6" ry="7" fill="#FFFCF5"/>'
+};
+const TINTS=["#E8A33A","#7FA37F","#C25640","#7A4B63","#4E6F60"];
+(function garden(){
+  const g=document.getElementById("garden");
+  const keys=Object.keys(SHAPES);
+  const spots=[[4,12],[16,72],[30,26],[47,86],[58,8],[68,58],[79,34],[88,78],[24,45],[92,18],[38,64],[72,90]];
+  spots.forEach((sp,i)=>{
+    const k=keys[i%keys.length], size=44+((i*13)%38);
+    const el=document.createElementNS("http://www.w3.org/2000/svg","svg");
+    el.setAttribute("viewBox","0 0 40 40");
+    el.setAttribute("width",size); el.setAttribute("height",size);
+    el.innerHTML=SHAPES[k];
+    el.style.top=sp[0]+"%"; el.style.left=sp[1]+"%";
+    el.style.color=TINTS[i%TINTS.length];
+    el.style.fill="currentColor";
+    el.style.opacity=(0.07+((i%3)*0.02)).toFixed(3);
+    el.style.animationDuration=(19+(i%7)*4)+"s";
+    el.style.animationDelay=(-i*2.7)+"s";
+    g.appendChild(el);
+  });
+})();
+
+/* ---------------- menu data ---------------- */
+const DISHES=[
+ {n:"Peri-peri grilled chicken, red rice, charred beans",k:520,p:48,c:52,f:12,d:"nonveg",dinner:true,i:"chilli"},
+ {n:"Assamese chicken curry with joha rice",k:560,p:42,c:60,f:16,d:"nonveg",dinner:true,i:"bowl"},
+ {n:"Naga pork with bamboo shoot, steamed rice",k:610,p:38,c:55,f:26,d:"nonveg",dinner:true,i:"chilli"},
+ {n:"Grilled fish, lemon quinoa, greens",k:480,p:44,c:42,f:14,d:"nonveg",dinner:true,i:"lemon"},
+ {n:"Chicken shawarma bowl, garlic yoghurt",k:540,p:46,c:48,f:17,d:"nonveg",dinner:true,i:"bowl"},
+ {n:"Thai basil chicken, jasmine rice",k:570,p:44,c:58,f:16,d:"nonveg",dinner:true,i:"leaf"},
+ {n:"Shakshuka with seeded sourdough",k:430,p:24,c:38,f:20,d:"egg",dinner:false,i:"egg"},
+ {n:"Turkish eggs, whipped labneh, toast",k:400,p:22,c:30,f:21,d:"egg",dinner:false,i:"egg"},
+ {n:"Masala baked eggs, millet toast",k:440,p:26,c:36,f:21,d:"egg",dinner:false,i:"egg"},
+ {n:"Paneer bhurji, millet roti, kachumber",k:500,p:34,c:42,f:21,d:"veg",dinner:true,i:"wheat"},
+ {n:"Rajma, brown rice, cucumber salad",k:520,p:24,c:72,f:12,d:"veg",dinner:true,i:"bowl"},
+ {n:"Tofu bibimbap bowl",k:480,p:30,c:56,f:14,d:"veg",dinner:true,i:"avocado"},
+ {n:"Chana masala, jeera rice, greens",k:490,p:22,c:70,f:11,d:"veg",dinner:true,i:"leaf"},
+ {n:"Soya keema, pav, salad",k:510,p:36,c:54,f:14,d:"veg",dinner:true,i:"tomato"},
+ {n:"Greek yoghurt, berries, toasted granola",k:380,p:28,c:44,f:10,d:"veg",dinner:false,i:"wheat"}
+];
+const DIALS=[
+ {n:"boiled egg",k:78,p:6.3,c:.6,f:5.3,d:"egg",max:3},
+ {n:"50 g grilled chicken",k:82,p:15.5,c:0,f:2,d:"nonveg",max:3},
+ {n:"40 g paneer",k:116,p:7.2,c:1.2,f:9,d:"veg",max:3},
+ {n:"whey scoop",k:120,p:24,c:3,f:1.5,d:"veg",max:1},
+ {n:"60 g cooked grain",k:78,p:1.6,c:17,f:.2,d:"veg",max:4},
+ {n:"15 g almonds",k:87,p:3.2,c:3.3,f:7.5,d:"veg",max:2},
+ {n:"5 g ghee",k:45,p:0,c:0,f:5,d:"veg",max:2}
+];
+function chip(icon,tint){
+  return '<span class="chip" style="background:'+tint+'22"><svg viewBox="0 0 40 40" width="13" height="13" style="fill:'+tint+';color:'+tint+'">'+SHAPES[icon]+'</svg></span>';
+}
+
+const DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+// Tare delivers lunch + dinner only. Breakfast and snacks stay with the customer.
+const SHARE_K=0.68, SHARE_P=0.75;
+const state={goal:"maintain",diet:"nonveg",activity:1.55};
+const $=s=>document.querySelector(s);
+
+function allowed(tag){
+  if(state.diet==="nonveg")return true;
+  if(state.diet==="egg")return tag!=="nonveg";
+  return tag==="veg";
+}
+function targets(){
+  const w=Math.max(35,Math.min(180,+$("#weight").value||72));
+  const bmr=10*w+6.25*172-5*29+5;
+  let k=bmr*state.activity;
+  if(state.goal==="cut")k-=450; if(state.goal==="gain")k+=350;
+  const p=Math.round(w*(state.goal==="cut"?2.2:state.goal==="gain"?2.0:1.9));
+  return {k:Math.round(k/10)*10,p:p};
+}
+function rota(n,seed){
+  const idx=[...Array(n).keys()]; let s=seed;
+  for(let i=n-1;i>0;i--){ s=(s*1103515245+12345)%2147483648; const j=s%(i+1); [idx[i],idx[j]]=[idx[j],idx[i]]; }
+  return idx;
+}
+function greedy(base,s,tK,tP){
+  let cur={k:base.k*s,p:base.p*s,c:base.c*s,f:base.f*s};
+  const pool=DIALS.filter(d=>allowed(d.d)).map(d=>({...d,used:0}));
+  const prot=pool.filter(d=>d.p>=6).sort((a,b)=>(a.k/a.p)-(b.k/b.p));
+  const energy=pool.filter(d=>d.p<6).sort((a,b)=>a.k-b.k);
+  let n=0;
+  for(let i=0;i<6 && tP-cur.p>4;i++){
+    const d=prot.find(x=>x.used<x.max && tP-cur.p>=x.p*0.6); if(!d)break;
+    d.used++;n++;cur.k+=d.k;cur.p+=d.p;cur.c+=d.c;cur.f+=d.f;
+  }
+  for(let i=0;i<6 && tK-cur.k>60;i++){
+    const d=energy.find(x=>x.used<x.max && tK-cur.k>=x.k*0.65); if(!d)break;
+    d.used++;n++;cur.k+=d.k;cur.p+=d.p;cur.c+=d.c;cur.f+=d.f;
+  }
+  const adds=[];
+  pool.forEach(d=>{ if(d.used) adds.push({t:(d.used>1?d.used+" \u00d7 ":"")+d.n,minus:false}); });
+  return {cur,adds,n};
+}
+function fit(base,tK,tP){
+  let best=null;
+  for(let s=0.75;s<=1.65;s+=0.05){
+    const sc=Math.round(s*20)/20;
+    const g=greedy(base,sc,tK,tP);
+    const score=Math.abs(g.cur.k-tK)+14*Math.abs(g.cur.p-tP)+30*g.n+40*Math.abs(sc-1);
+    if(!best||score<best.score) best={...g,scale:sc,score};
+  }
+  const adds=[...best.adds];
+  if(best.scale!==1) adds.unshift({t:"portion \u00d7"+best.scale.toFixed(2),minus:false,scale:true});
+  return {cur:best.cur,adds};
+}
+function render(){
+  const t=targets();
+  $("#dKcal").innerHTML=t.k+"<span>kcal/day target</span>";
+  $("#dProtein").innerHTML=t.p+" g<span>protein/day target</span>";
+
+  const lunchPool=DISHES.filter(d=>allowed(d.d));
+  const dinnerPool=DISHES.filter(d=>allowed(d.d)&&d.dinner);
+  const lr=rota(lunchPool.length,7), dr=rota(dinnerPool.length,23);
+  const planK=Math.round(t.k*SHARE_K), planP=Math.round(t.p*SHARE_P);
+  let html="",sumK=0,sumP=0,sumDev=0,sticker=null;
+
+  DAYS.forEach((day,i)=>{
+    const L=lunchPool[lr[i%lr.length]];
+    const D=dinnerPool[dr[i%dr.length]];
+    const rL=fit(L,planK*0.5,planP*0.5);
+    const rD=fit(D,planK-rL.cur.k,planP-rL.cur.p);
+    const dayK=Math.round(rL.cur.k+rD.cur.k), dayP=Math.round(rL.cur.p+rD.cur.p);
+    const dev=dayK-planK, devP=dayP-planP;
+    sumK+=dayK;sumP+=dayP;sumDev+=Math.abs(dev);
+    if(i===2)sticker={dish:D.n,r:rD.cur};
+
+    const meal=(slot,dish,r,tint)=>`<div class="meal">
+      <div class="slot">${chip(dish.i,tint)}${slot}</div>
+      <div class="dish">${dish.n}</div>
+      ${r.adds.length?`<ul class="dials">${r.adds.map(a=>`<li class="${a.minus?"minus":""}${a.scale?" scale":""}">${a.t}</li>`).join("")}</ul>`:""}
+      <div class="macro"><span><b>${Math.round(r.cur.k)}</b> kcal</span><span><b>${Math.round(r.cur.p)}</b> g protein</span><span><b>${Math.round(r.cur.c)}</b> g carbohydrate</span><span><b>${Math.round(r.cur.f)}</b> g fat</span></div>
+    </div>`;
+
+    html+=`<article class="day">
+      <div class="daybar">
+        <div class="dayname">${day}</div>
+        <div class="tally">
+          <span><b>${dayK}</b> / ${planK} kcal <span class="d ${Math.abs(dev)>60?"warn":""}">${dev>=0?"+":""}${dev}</span></span>
+          <span><b>${dayP}</b> / ${planP} g protein <span class="d ${Math.abs(devP)>6?"warn":""}">${devP>=0?"+":""}${devP}</span></span>
+        </div>
+      </div>
+      <div class="meals">${meal("LUNCH &middot; cooked 11:15, delivered 12:30",L,rL,"#E8A33A")}${meal("DINNER &middot; cooked 18:15, delivered 19:30",D,rD,"#7A4B63")}</div>
+    </article>`;
+  });
+
+  $("#plan").innerHTML=html;
+  const avgK=Math.round(sumK/DAYS.length), avgP=Math.round(sumP/DAYS.length), avgDev=Math.round(sumDev/DAYS.length);
+  $("#gTarget").innerHTML=planK+"<small>kcal</small>";
+  $("#gPlanned").innerHTML=avgK+"<small>kcal</small>";
+  $("#gDelta").innerHTML="\u00b1"+avgDev+"<small>kcal</small>";
+  $("#gProtein").innerHTML=avgP+"<small>g</small>";
+  $("#verdict").textContent="Two fresh services carry "+planK+" kcal and "+planP+" g of protein, planned inside a "+avgDev+" kcal band.";
+
+  if(sticker){
+    const r=sticker.r;
+    $("#sDish").textContent=sticker.dish.length>26?sticker.dish.slice(0,26)+"\u2026":sticker.dish;
+    $("#sWeight").textContent=Math.round(r.k*0.78)+" g";
+    $("#sP").textContent=Math.round(r.p)+" g";
+    $("#sC").textContent=Math.round(r.c)+" g";
+    $("#sF").textContent=Math.round(r.f)+" g";
+    $("#sK").textContent=Math.round(r.k)+" kcal";
+  }
+}
+["goal","diet","activity"].forEach(id=>{
+  document.getElementById(id).addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b)return;
+    [...e.currentTarget.children].forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    state[id]=id==="activity"?parseFloat(b.dataset.v):b.dataset.v;
+    render();
+  });
+});
+$("#weight").addEventListener("input",render);
+$("#go").addEventListener("click",render);
+render();
+</script>
+</body>
+</html>
