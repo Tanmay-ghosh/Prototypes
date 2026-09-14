@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Premises Verification — Journey Prototype</title>
+<style>
+  :root{
+    --ink:#151A22;
+    --ink-soft:#5A6472;
+    --paper:#FFFFFF;
+    --wash:#F2F4F1;
+    --line:#DFE3DC;
+    --accent:#1F4FD8;
+    --good:#0C6B4F;
+    --warn:#9A5B00;
+    --bad:#A32C2C;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--wash);
+    color:var(--ink);
+    font-family:"Söhne","Inter","Helvetica Neue",Arial,sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .shell{
+    max-width:1120px;
+    margin:0 auto;
+    padding:32px 20px 64px;
+    display:grid;
+    grid-template-columns:minmax(320px,380px) 1fr;
+    gap:40px;
+    align-items:start;
+  }
+  header.page{
+    max-width:1120px;
+    margin:0 auto;
+    padding:40px 20px 8px;
+  }
+  header.page h1{
+    font-size:26px;
+    font-weight:600;
+    letter-spacing:-0.02em;
+    margin:0 0 6px;
+  }
+  header.page p{
+    margin:0;
+    color:var(--ink-soft);
+    max-width:62ch;
+  }
+  .sim-note{
+    display:inline-block;
+    margin-top:14px;
+    padding:6px 11px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:var(--paper);
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+
+  /* ---------- phone ---------- */
+  .phone{
+    background:var(--ink);
+    border-radius:34px;
+    padding:12px;
+    box-shadow:0 20px 50px rgba(21,26,34,.18);
+    position:sticky;
+    top:24px;
+  }
+  .screen{
+    background:var(--paper);
+    border-radius:24px;
+    min-height:620px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .statusbar{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 18px 4px;
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+  .appbar{
+    padding:6px 20px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .mark{
+    width:22px;height:22px;border-radius:6px;
+    background:var(--accent);
+    display:grid;place-items:center;
+    color:#fff;font-size:11px;font-weight:700;
+  }
+  .appbar .name{font-weight:600;font-size:14px}
+  .appbar .step{margin-left:auto;font-size:11.5px;color:var(--ink-soft)}
+  .body{
+    padding:22px 20px 8px;
+    flex:1;
+    overflow-y:auto;
+  }
+  .body h2{
+    font-size:19px;
+    line-height:1.3;
+    letter-spacing:-0.01em;
+    margin:0 0 6px;
+    font-weight:600;
+  }
+  .body p.sub{
+    margin:0 0 18px;
+    color:var(--ink-soft);
+    font-size:13.5px;
+  }
+  .foot{
+    padding:12px 20px 20px;
+    border-top:1px solid var(--line);
+  }
+
+  button{font-family:inherit}
+  .btn{
+    width:100%;
+    padding:13px 16px;
+    border:0;
+    border-radius:10px;
+    background:var(--accent);
+    color:#fff;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn:disabled{background:#B9C1D6;cursor:not-allowed}
+  .btn.ghost{
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    font-weight:500;
+  }
+  .btn.quiet{
+    background:transparent;color:var(--accent);font-weight:500;padding:10px 0;
+  }
+  .btn:focus-visible,.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .opt{
+    display:block;
+    width:100%;
+    text-align:left;
+    padding:13px 14px;
+    margin-bottom:9px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    font-size:14px;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .opt:hover{border-color:var(--accent)}
+  .opt .hint{display:block;font-size:12px;color:var(--ink-soft);margin-top:2px}
+
+  .field{
+    width:100%;padding:12px 14px;border:1px solid var(--line);
+    border-radius:10px;font-size:15px;margin-bottom:10px;font-family:inherit;
+  }
+  .field:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+
+  .viewfinder{
+    background:#101419;
+    border-radius:12px;
+    aspect-ratio:3/4;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:14px;
+    color:#E8ECF2;
+    position:relative;
+    overflow:hidden;
+  }
+  .viewfinder .sim{
+    font-size:11.5px;
+    color:#8D98A8;
+    letter-spacing:.01em;
+  }
+  .viewfinder .prompt{
+    background:rgba(255,255,255,.09);
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:9px;
+    padding:10px 12px;
+    font-size:13px;
+  }
+  .viewfinder .prompt strong{display:block;margin-bottom:2px;font-size:13.5px}
+  .reticle{
+    position:absolute;inset:34px 22px;
+    border:1.5px dashed rgba(255,255,255,.22);
+    border-radius:8px;
+    pointer-events:none;
+  }
+  .stamp{
+    display:flex;gap:12px;flex-wrap:wrap;
+    font-size:10.5px;color:#8D98A8;
+  }
+
+  .feedback{
+    margin-top:12px;padding:11px 13px;border-radius:10px;font-size:13px;
+    border:1px solid var(--line);background:var(--wash);
+  }
+  .feedback.ok{border-color:#BEDDD0;background:#EFF8F4;color:var(--good)}
+  .feedback.retry{border-color:#EBD5A8;background:#FDF6E7;color:var(--warn)}
+  .feedback.err{border-color:#E9C6C6;background:#FBEFEF;color:var(--bad)}
+
+  .checklist{list-style:none;padding:0;margin:14px 0 0}
+  .checklist li{
+    display:flex;gap:9px;align-items:flex-start;
+    padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;
+  }
+  .checklist li:last-child{border-bottom:0}
+  .tick{
+    width:17px;height:17px;border-radius:5px;flex:none;margin-top:1px;
+    border:1px solid var(--line);display:grid;place-items:center;
+    font-size:10px;color:#fff;
+  }
+  .tick.done{background:var(--good);border-color:var(--good)}
+  .tick.now{border-color:var(--accent);color:var(--accent);background:#EAF0FF}
+  .checklist li.pending{color:var(--ink-soft)}
+
+  .pathcard{
+    border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;
+  }
+  .pathcard h3{margin:0 0 4px;font-size:13.5px;font-weight:600}
+  .pathcard p{margin:0;font-size:13px;color:var(--ink-soft)}
+  .tag{
+    display:inline-block;padding:2px 8px;border-radius:999px;
+    font-size:11px;font-weight:600;margin-bottom:8px;
+  }
+  .tag.base{background:#EAF0FF;color:var(--accent)}
+  .tag.anchor{background:#EFF8F4;color:var(--good)}
+  .tag.req{background:#FDF6E7;color:var(--warn)}
+
+  .score{
+    text-align:center;padding:10px 0 4px;
+  }
+  .score .num{font-size:46px;font-weight:600;letter-spacing:-0.03em;line-height:1}
+  .score .lbl{font-size:12.5px;color:var(--ink-soft)}
+  .bars{margin-top:16px}
+  .bar{margin-bottom:11px}
+  .bar .row{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px}
+  .bar .track{height:6px;background:var(--wash);border-radius:99px;overflow:hidden}
+  .bar .fill{height:100%;background:var(--good);border-radius:99px;transition:width .5s ease}
+  .bar .fill.mid{background:var(--warn)}
+
+  .amount{
+    border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;margin-bottom:12px;
+  }
+  .amount .val{font-size:30px;font-weight:600;letter-spacing:-0.02em}
+  .amount .cap{font-size:12.5px;color:var(--ink-soft)}
+
+  /* ---------- inspector ---------- */
+  .inspector{display:flex;flex-direction:column;gap:18px}
+  .panel{
+    background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;
+  }
+  .panel h3{
+    margin:0 0 12px;font-size:13px;font-weight:600;color:var(--ink-soft);
+  }
+  .kv{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft)}
+  .kv .v{text-align:right;font-weight:500}
+  .log{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;line-height:1.75;max-height:240px;overflow-y:auto;color:var(--ink-soft);
+  }
+  .log div{padding:1px 0}
+  .log .hi{color:var(--ink)}
+  .log .g{color:var(--good)}
+  .log .w{color:var(--warn)}
+  .controls{display:flex;flex-wrap:wrap;gap:8px}
+  .controls button{
+    padding:8px 12px;font-size:12.5px;border:1px solid var(--line);
+    background:var(--paper);border-radius:8px;cursor:pointer;color:var(--ink);
+  }
+  .controls button:hover{border-color:var(--accent);color:var(--accent)}
+  .mapkey{font-size:12.5px;color:var(--ink-soft);margin:0 0 10px}
+
+  @media (max-width:860px){
+    .shell{grid-template-columns:1fr}
+    .phone{position:static}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>Customer-led premises verification</h1>
+  <p>A clickable walkthrough of the proposed journey: context-aware onboarding, AI-guided live capture, and the Base and Anchor evidence model. Pick any persona to see how the path changes.</p>
+  <span class="sim-note">Simulated demo. No camera, location or network access is used — each step describes what would happen on a real device.</span>
+</header>
+
+<div class="shell">
+
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar"><span>9:41</span><span>Simulated device</span></div>
+      <div class="appbar">
+        <span class="mark">L</span>
+        <span class="name">Lender app</span>
+        <span class="step" id="stepLabel"></span>
+      </div>
+      <div class="body" id="body"></div>
+      <div class="foot" id="foot"></div>
+    </div>
+  </div>
+
+  <div class="inspector">
+    <div class="panel">
+      <h3>What the lender receives</h3>
+      <div id="signals"></div>
+    </div>
+    <div class="panel">
+      <h3>Session log</h3>
+      <div class="log" id="log"></div>
+    </div>
+    <div class="panel">
+      <h3>Try a failure path</h3>
+      <p class="mapkey">The journey should never dead-end. Trigger a real-world condition at any point during capture.</p>
+      <div class="controls">
+        <button onclick="failDeny()">Deny camera permission</button>
+        <button onclick="failNetwork()">Lose network</button>
+        <button onclick="failInterrupt()">Interrupt session</button>
+        <button onclick="reset()">Restart</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- persona definitions ---------------- */
+const PERSONAS = {
+  salaried: {
+    label:"Salaried professional",
+    premises:"residence",
+    anchor:"Work email, offer letter, office capture",
+    anchorHow:"A code to your office email, your offer or appointment letter, and a live capture of your office",
+    anchorMeans:"Here for a job, likely to stay while employed",
+    shots:[
+      {t:"Street view of the building", p:"Stand across the street and frame the whole building"},
+      {t:"Entrance and house number", p:"Move closer so the flat or house number is readable"},
+      {t:"Nearby landmark", p:"Turn to show a shop, junction or signboard nearby"}
+    ]
+  },
+  student: {
+    label:"College student",
+    premises:"residence",
+    anchor:"College email or PG owner confirmation",
+    anchorHow:"One-time code to your college email, or a one-tap confirmation from your PG owner",
+    anchorMeans:"Here to study, likely to stay until the course ends",
+    anchorChoice:["College email","PG owner confirmation"],
+    shots:[
+      {t:"Street view of the PG or hostel", p:"Frame the building from the road"},
+      {t:"Entrance and building name", p:"Move closer so the name or number is readable"},
+      {t:"Your room door", p:"Show the door of your room or floor"}
+    ]
+  },
+  selfemp: {
+    label:"Self-employed, no GST",
+    premises:"residence and workspace",
+    anchor:"Property papers, rental agreement or utility bill",
+    anchorHow:"Photograph the document; the address is read and matched to your captured location",
+    anchorMeans:"Lives here, with the document showing how long that holds",
+    anchorChoice:["Own property papers","Rental agreement","Utility bill"],
+    shots:[
+      {t:"Street view of the building", p:"Frame the whole building from the road"},
+      {t:"Entrance and house number", p:"Move closer so the number is readable"},
+      {t:"Your workspace", p:"Show the desk or area you work from"}
+    ]
+  },
+  business: {
+    label:"Small business owner",
+    premises:"shop",
+    anchor:"GST registration",
+    anchorHow:"Enter your GSTIN; the registered address is matched to your captured location",
+    anchorMeans:"Runs a business here, likely to stay while the business is active",
+    shots:[
+      {t:"Shopfront and signboard", p:"Stand back so the full signboard is readable"},
+      {t:"Shop entrance", p:"Move to the doorway and frame the entrance"},
+      {t:"Inside the shop", p:"Pan slowly across the counter and stock"}
+    ]
+  },
+  pensioner: {
+    label:"Pensioner",
+    premises:"residence",
+    anchor:"Property papers or utility bill",
+    anchorHow:"Photograph the document; the address is read and matched to your captured location",
+    anchorMeans:"Lives here, with the document showing how long that holds",
+    anchorChoice:["Own property papers","Electricity or gas bill"],
+    shots:[
+      {t:"Street view of the house", p:"Stand at the gate and frame the house"},
+      {t:"Entrance and house number", p:"Come closer so the number is readable"},
+      {t:"Nearby landmark", p:"Turn to show a temple, shop or junction nearby"}
+    ]
+  }
+};
+
+const ANCHOR_STRENGTH = {
+  "Own property papers":        {add:24, holds:"Indefinite",              refresh:"No refresh needed"},
+  "GST registration":           {add:20, holds:"While registered",        refresh:"Re-checked on the public GST portal"},
+  "Work email, offer letter, office capture": {add:20, holds:"While employed", refresh:"Work email bounce shows it ended"},
+  "College email":              {add:18, holds:"Until the course ends",   refresh:"Email expiry or course end date"},
+  "Rental agreement":           {add:14, holds:"Until its end date",      refresh:"Refresh date set at capture"},
+  "Electricity or gas bill":    {add:9,  holds:"One billing cycle",       refresh:"Fresh bill each cycle"},
+  "Utility bill":               {add:9,  holds:"One billing cycle",       refresh:"Fresh bill each cycle"},
+  "PG owner confirmation":      {add:9,  holds:"Until they move out",     refresh:"Scheduled check-in"}
+};
+
+const RANDOM_PROMPTS = [
+  "Now turn left and show the street",
+  "Now tilt up to show the floor above",
+  "Now turn right towards the road",
+  "Now step back two paces and hold steady"
+];
+
+/* ---------------- state ---------------- */
+let S = {};
+function blank(){
+  return {
+    screen:"login", phone:"", otp:"",
+    persona:null, living:null, addrMatch:null,
+    guidance:"light",
+    shotIndex:0, shotsDone:[], retried:false, retriedEver:false,
+    walkMeters:0,
+    score:null, anchorDone:false, anchorPick:null, baseBreak:null,
+    offline:false, paused:false, permission:"not asked",
+    logLines:[]
+  };
+}
+
+/* ---------------- helpers ---------------- */
+const $ = id => document.getElementById(id);
+function log(text, cls){
+  S.logLines.push({text, cls:cls||""});
+  const l = $("log");
+  l.innerHTML = S.logLines.map(x=>`<div class="${x.cls}">${x.text}</div>`).join("");
+  l.scrollTop = l.scrollHeight;
+}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))}
+function p(){ return PERSONAS[S.persona] || null; }
+function anchorRequired(){ return S.addrMatch === "no"; }
+function stamp(){
+  const d = new Date();
+  return d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+
+/* ---------------- signals panel ---------------- */
+function renderSignals(){
+  const per = p();
+  const bd = S.baseBreak;
+  const rows = [
+    ["Persona", per ? per.label : "—"],
+    ["Premises type", per ? per.premises : "—"],
+    ["Living situation", S.living || "—"],
+    ["Matches document address", S.addrMatch ? (S.addrMatch==="yes"?"Yes":"No") : "—"],
+    ["Captures complete", S.shotsDone.length + (per ? " of " + per.shots.length : "")],
+    ["Walk-to-door trail", S.walkMeters ? S.walkMeters + " m" : "—"],
+    ["Capture readability", bd ? bd.readable + " / 100" : "—"],
+    ["GPS match", bd ? bd.gps + " / 100" : "—"],
+    ["Walk trail continuity", bd ? bd.trail + " / 100" : "—"],
+    ["Device and liveness checks", bd ? "Passed" : "—"],
+    ["Anchor", S.anchorPick ? S.anchorPick : (per ? per.anchor : "—")],
+    ["Anchor holds for", S.anchorDone && S.anchorPick ? (ANCHOR_STRENGTH[S.anchorPick]||{}).holds || "—" : "—"],
+    ["Refresh trigger", S.anchorDone && S.anchorPick ? (ANCHOR_STRENGTH[S.anchorPick]||{}).refresh || "—" : "—"],
+    ["Confidence score", S.score !== null ? S.score + " / 100" : "—"]
+  ];
+  $("signals").innerHTML = rows.map(([k,v])=>
+    `<div class="kv"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`
+  ).join("");
+}
+
+/* ---------------- screen renderer ---------------- */
+function render(){
+  const b = $("body"), f = $("foot"), per = p();
+  b.innerHTML = ""; f.innerHTML = "";
+  $("stepLabel").textContent = stepLabelFor(S.screen);
+
+  const R = SCREENS[S.screen];
+  if(R) R(b,f,per);
+  renderSignals();
+}
+
+function stepLabelFor(s){
+  const map = {
+    login:"", otp:"", q1:"Step 1 of 3", q2:"Step 2 of 3", q3:"Step 3 of 3",
+    path:"Your path", permission:"Before we start", capture:"Capture",
+    walk:"Capture", processing:"Checking", outcome:"Result",
+    anchor:"Unlock more", done:"Done", denied:"Camera access", offline:"Saved",
+    paused:"Paused"
+  };
+  return map[s] ?? "";
+}
+
+const SCREENS = {
+
+  login(b,f){
+    b.innerHTML = `
+      <h2>Verify your premises</h2>
+      <p class="sub">This takes about 3 minutes. You'll show us where you live or work, and we'll confirm it on the spot.</p>
+      <input class="field" id="ph" inputmode="numeric" placeholder="Mobile number" value="${esc(S.phone)}">
+      <p class="sub" style="margin-top:4px">Any 10 digits work in this demo.</p>`;
+    f.innerHTML = `<button class="btn" id="go">Send code</button>`;
+    $("go").onclick = ()=>{
+      S.phone = $("ph").value || "9876543210";
+      log("Session started for "+S.phone);
+      S.screen="otp"; render();
+    };
+  },
+
+  otp(b,f){
+    b.innerHTML = `
+      <h2>Enter the code</h2>
+      <p class="sub">Sent to ${esc(S.phone)}. Any 4 digits work here.</p>
+      <input class="field" id="otp" inputmode="numeric" placeholder="4-digit code" maxlength="4">`;
+    f.innerHTML = `<button class="btn" id="go">Continue</button>`;
+    $("go").onclick = ()=>{ log("Logged in"); S.screen="q1"; render(); };
+  },
+
+  q1(b,f){
+    b.innerHTML = `
+      <h2>What do you do?</h2>
+      <p class="sub">This decides what we ask you to show, so you only do what applies to you.</p>
+      ${Object.entries(PERSONAS).map(([k,v])=>
+        `<button class="opt" data-k="${k}">${v.label}
+          <span class="hint">We'll verify your ${v.premises}</span></button>`).join("")}`;
+    b.querySelectorAll(".opt").forEach(el=>el.onclick=()=>{
+      S.persona = el.dataset.k;
+      if(S.persona==="pensioner") S.guidance="voice";
+      log("Profession: "+PERSONAS[S.persona].label, "hi");
+      S.screen="q2"; render();
+    });
+  },
+
+  q2(b,f){
+    const opts = [
+      ["Own home","You or your family own it"],
+      ["Rented","On a rent agreement"],
+      ["PG or hostel","Shared or paying-guest accommodation"],
+      ["Staying with family","Not in your name"]
+    ];
+    b.innerHTML = `
+      <h2>Where are you living right now?</h2>
+      <p class="sub">Not where your documents say — where you actually stay today.</p>
+      ${opts.map(([t,h])=>`<button class="opt" data-t="${t}">${t}<span class="hint">${h}</span></button>`).join("")}`;
+    b.querySelectorAll(".opt").forEach(el=>el.onclick=()=>{
+      S.living = el.dataset.t;
+      log("Living situation: "+S.living, "hi");
+      S.screen="q3"; render();
+    });
+  },
+
+  q3(b,f){
+    b.innerHTML = `
+      <h2>Is this the same address as on your ID?</h2>
+      <p class="sub">Plenty of people live away from their document address. It's not a problem — it just changes what we ask for.</p>
+      <button class="opt" data-v="yes">Yes, it's the same<span class="hint">Live capture alone can start you off</span></button>
+      <button class="opt" data-v="no">No, I've moved<span class="hint">We'll ask for one extra proof that you live here</span></button>`;
+    b.querySelectorAll(".opt").forEach(el=>el.onclick=()=>{
+      S.addrMatch = el.dataset.v;
+      log("Current address matches ID: "+(S.addrMatch==="yes"?"yes":"no"), S.addrMatch==="no"?"w":"");
+      if(S.addrMatch==="no") log("Anchor set to mandatory", "w");
+      S.screen="path"; render();
+    });
+  },
+
+  path(b,f,per){
+    b.innerHTML = `
+      <h2>Here's your path</h2>
+      <p class="sub">Built from your three answers. Nothing else is asked of you.</p>
+      <div class="pathcard">
+        <span class="tag base">Base</span>
+        <h3>Show us where you are</h3>
+        <p>ID check, a guided live capture of your ${per.premises}, and a short walk to your door. No documents.</p>
+      </div>
+      <div class="pathcard">
+        <span class="tag ${anchorRequired()?"req":"anchor"}">Anchor ${anchorRequired()?"· required":"· optional"}</span>
+        <h3>${esc(per.anchor)}</h3>
+        <p>${esc(per.anchorHow)}. ${anchorRequired()
+          ? "Because you've moved, we need this to confirm you live here."
+          : "Add it later to raise your limit."}</p>
+      </div>
+      ${S.guidance==="voice" ? `<div class="feedback">Voice guidance is on. We'll talk you through each step in your language, and you can switch to a person at any time.</div>`:""}`;
+    f.innerHTML = `<button class="btn" id="go">Start</button>`;
+    $("go").onclick = ()=>{ S.screen="permission"; render(); };
+  },
+
+  permission(b,f,per){
+    b.innerHTML = `
+      <h2>Camera and location, briefly</h2>
+      <p class="sub">Here's exactly what we use and why, before your phone asks.</p>
+      <ul class="checklist">
+        <li><span class="tick done">✓</span><span><strong>Camera</strong><br><span style="color:var(--ink-soft)">To capture your ${per.premises} live. Gallery uploads aren't accepted, so old photos can't be used.</span></span></li>
+        <li><span class="tick done">✓</span><span><strong>Location</strong><br><span style="color:var(--ink-soft)">To confirm the capture happened at the address you gave us.</span></span></li>
+        <li><span class="tick done">✓</span><span><strong>What we don't do</strong><br><span style="color:var(--ink-soft)">No tracking after this session. We keep only the frames needed as evidence.</span></span></li>
+      </ul>`;
+    f.innerHTML = `<button class="btn" id="go">Allow and continue</button>`;
+    $("go").onclick = ()=>{
+      S.permission = "granted";
+      log("Camera and location permission granted", "g");
+      S.screen="capture"; render();
+    };
+  },
+
+  capture(b,f,per){
+    const shot = per.shots[S.shotIndex];
+    const total = per.shots.length;
+    b.innerHTML = `
+      <h2>${esc(shot.t)}</h2>
+      <p class="sub">Capture ${S.shotIndex+1} of ${total}${S.guidance==="voice"?" · read aloud to you":""}</p>
+      <div class="viewfinder">
+        <div class="sim">Simulated camera view</div>
+        <div class="reticle"></div>
+        <div>
+          <div class="prompt"><strong>${esc(shot.p)}</strong>${
+            S.shotIndex===1 ? `<span style="color:#B7C2D2">${esc(RANDOM_PROMPTS[S.shotIndex % RANDOM_PROMPTS.length])}</span>`:""
+          }</div>
+          <div class="stamp" style="margin-top:10px">
+            <span>GPS locked</span><span>${stamp()}</span><span>In-app camera</span>
+          </div>
+        </div>
+      </div>
+      <div id="fb"></div>
+      <ul class="checklist">
+        ${per.shots.map((s,i)=>`
+          <li class="${i>S.shotIndex?"pending":""}">
+            <span class="tick ${i<S.shotIndex?"done":(i===S.shotIndex?"now":"")}">${i<S.shotIndex?"✓":""}</span>
+            <span>${esc(s.t)}</span>
+          </li>`).join("")}
+      </ul>`;
+    f.innerHTML = `<button class="btn" id="cap">Capture</button>`;
+    $("cap").onclick = ()=>doCapture(per);
+  },
+
+  walk(b,f,per){
+    b.innerHTML = `
+      <h2>Walk to your door</h2>
+      <p class="sub">Keep recording as you walk the last 100 metres. The continuous trail is what makes this hard to fake.</p>
+      <div class="viewfinder">
+        <div class="sim">Simulated camera view · recording</div>
+        <div class="reticle"></div>
+        <div>
+          <div class="prompt"><strong>${S.walkMeters>=100?"You're there. Finish at your door.":"Keep walking towards your entrance"}</strong>
+            <span style="color:#B7C2D2">${S.walkMeters} m of 100 m recorded</span></div>
+          <div class="stamp" style="margin-top:10px"><span>GPS trail continuous</span><span>${stamp()}</span></div>
+        </div>
+      </div>
+      <div id="fb"></div>`;
+    f.innerHTML = S.walkMeters>=100
+      ? `<button class="btn" id="fin">Finish at the door</button>`
+      : `<button class="btn" id="walk">Walk 25 m</button>`;
+    if($("walk")) $("walk").onclick = ()=>{
+      S.walkMeters += 25;
+      log("Walk trail: "+S.walkMeters+" m recorded");
+      render();
+    };
+    if($("fin")) $("fin").onclick = ()=>{
+      log("Walk-to-door video complete, 100 m continuous trail", "g");
+      S.screen="processing"; render(); runScoring();
+    };
+  },
+
+  processing(b,f){
+    b.innerHTML = `
+      <h2>Checking your evidence</h2>
+      <p class="sub">No one reviews this by hand. The system decides now.</p>
+      <ul class="checklist" id="checks">
+        <li class="pending"><span class="tick"></span><span>Captured live on this device</span></li>
+        <li class="pending"><span class="tick"></span><span>Location matches the address you gave</span></li>
+        <li class="pending"><span class="tick"></span><span>All required views are readable</span></li>
+        <li class="pending"><span class="tick"></span><span>No sign of tampering or reuse</span></li>
+      </ul>`;
+  },
+
+  outcome(b,f,per){
+    const bd = S.baseBreak || {readable:0,gps:0,trail:0};
+    const gated = anchorRequired() && !S.anchorDone;
+    const limit = S.anchorDone
+      ? (ANCHOR_STRENGTH[S.anchorPick] && ANCHOR_STRENGTH[S.anchorPick].add >= 18 ? "\u20b950,000" : "\u20b930,000")
+      : (gated ? "Not yet open" : "\u20b910,000");
+    b.innerHTML = `
+      <h2>${S.anchorDone ? "Limit updated" : (gated ? "One more step" : "Verified")}</h2>
+      <p class="sub">${S.anchorDone
+        ? "Your address is confirmed and your file is complete."
+        : (gated
+          ? "Your capture scored well. Since you've moved, we need one proof that you live here before a limit opens."
+          : "Your capture scored well. You can stop here, or add one proof to raise your limit.")}</p>
+      <div class="score">
+        <div class="num">${S.score}</div>
+        <div class="lbl">evidence confidence</div>
+      </div>
+      <div class="bars">
+        ${bar("Capture readability", bd.readable)}
+        ${bar("GPS match", bd.gps)}
+        ${bar("Walk trail continuity", bd.trail)}
+        ${bar("Proof you live here", S.anchorDone ? 92 : (gated ? 28 : 60))}
+      </div>
+      <div class="amount" style="margin-top:18px">
+        <div class="val">${limit}</div>
+        <div class="cap">${S.anchorDone ? "subject to credit policy" : (gated ? "add your anchor to open a limit" : "starter limit, subject to credit policy")}</div>
+      </div>
+      ${S.anchorDone && S.anchorPick ? `<div class="feedback">Holds for ${esc((ANCHOR_STRENGTH[S.anchorPick]||{}).holds||"")}. ${esc((ANCHOR_STRENGTH[S.anchorPick]||{}).refresh||"")}.</div>`:""}`;
+    f.innerHTML = S.anchorDone
+      ? `<button class="btn" id="done">Done</button>`
+      : `<button class="btn" id="anc">${gated?"Add your proof":"Raise my limit"}</button>
+         ${gated?"":`<button class="btn quiet" id="skip">Keep the starter limit</button>`}`;
+    if($("anc")) $("anc").onclick = ()=>{ S.screen="anchor"; render(); };
+    if($("skip")) $("skip").onclick = ()=>{ S.screen="done"; render(); };
+    if($("done")) $("done").onclick = ()=>{ S.screen="done"; render(); };
+  },
+
+  anchor(b,f,per){
+    const choices = per.anchorChoice || [per.anchor];
+    b.innerHTML = `
+      <h2>Choose your proof</h2>
+      <p class="sub">Stronger proof means a higher limit and fewer check-ins later. Pick what you have.</p>
+      ${choices.map(c=>{
+        const a = ANCHOR_STRENGTH[c] || {add:12, holds:"\u2014", refresh:"\u2014"};
+        return `<button class="opt" data-c="${esc(c)}">${esc(c)}
+          <span class="hint">Holds for ${esc(a.holds).toLowerCase()} \u00b7 ${esc(a.refresh).toLowerCase()} \u00b7 adds about ${a.add} points</span></button>`;
+      }).join("")}
+      <div class="feedback" style="margin-top:6px">Simulated. On a real device this would ${S.persona==="business"?"look up your GSTIN and compare the registered address with your captured location":"send a code, or read the document and compare its address with your captured location"}.</div>`;
+    b.querySelectorAll(".opt").forEach(el=>el.onclick=()=>{
+      const c = el.dataset.c;
+      S.anchorPick = c;
+      S.anchorDone = true;
+      const a = ANCHOR_STRENGTH[c] || {add:12};
+      S.score = Math.min(97, S.score + a.add + (anchorRequired()?6:0));
+      log("Anchor verified: "+c, "g");
+      log("Anchor adds "+a.add+" points \u2192 score "+S.score, "hi");
+      log("Address record set to current address", "g");
+      S.screen="outcome"; render();
+    });
+  },
+
+  done(b,f,per){
+    b.innerHTML = `
+      <h2>You're verified</h2>
+      <p class="sub">Took under three minutes, with nothing sent for manual review.</p>
+      <ul class="checklist">
+        <li><span class="tick done">✓</span><span>Live capture of your ${per.premises}, stamped with location and time</span></li>
+        <li><span class="tick done">✓</span><span>Walk-to-door trail confirming the exact entrance</span></li>
+        <li><span class="tick ${S.anchorDone?"done":""}">${S.anchorDone?"\u2713":""}</span><span>${S.anchorDone?esc(S.anchorPick)+" verified":"No anchor added, starter limit only"}</span></li>
+      </ul>
+      ${S.anchorDone?`<div class="feedback ok" style="margin-top:16px">${esc((ANCHOR_STRENGTH[S.anchorPick]||{}).refresh||"We'll check in when your proof is close to expiring")}. We ask you, never a third party about you.</div>`:""}`;
+    f.innerHTML = `<button class="btn ghost" onclick="reset()">Run another persona</button>`;
+  },
+
+  denied(b,f){
+    b.innerHTML = `
+      <h2>Camera access is off</h2>
+      <p class="sub">Nothing is lost. Turn it on and you'll come straight back to this step.</p>
+      <ul class="checklist">
+        <li><span class="tick now">1</span><span>Open Settings, then this app</span></li>
+        <li><span class="tick now">2</span><span>Turn on Camera</span></li>
+        <li><span class="tick now">3</span><span>Come back here</span></li>
+      </ul>
+      <div class="feedback">Your progress so far is saved. We'll also text you a link so you can finish later.</div>`;
+    f.innerHTML = `<button class="btn" id="back">I've turned it on</button>`;
+    $("back").onclick = ()=>{ log("Permission restored, resuming at the same step","g"); S.screen="capture"; render(); };
+  },
+
+  offline(b,f){
+    b.innerHTML = `
+      <h2>Saved on your phone</h2>
+      <p class="sub">No signal right now. Your captures are stored with their location and time locked in, and will upload on their own.</p>
+      <div class="feedback">Nothing needs recapturing. You can close the app.</div>`;
+    f.innerHTML = `<button class="btn" id="back">Network is back</button>`;
+    $("back").onclick = ()=>{
+      S.offline=false; log("Network restored, queued captures uploaded","g");
+      S.screen="capture"; render();
+    };
+  },
+
+  paused(b,f){
+    b.innerHTML = `
+      <h2>Pick up where you left off</h2>
+      <p class="sub">You were interrupted. We've texted you a link that opens at this exact step.</p>
+      <div class="feedback">Earlier captures are kept, so you don't repeat anything.</div>`;
+    f.innerHTML = `<button class="btn" id="back">Continue from here</button>`;
+    $("back").onclick = ()=>{ log("Resumed from SMS link at the same step","g"); S.screen="capture"; render(); };
+  }
+};
+
+function bar(label, pct){
+  return `<div class="bar"><div class="row"><span>${esc(label)}</span><span>${pct}</span></div>
+    <div class="track"><div class="fill ${pct<70?"mid":""}" style="width:${pct}%"></div></div></div>`;
+}
+
+/* ---------------- capture logic ---------------- */
+function doCapture(per){
+  const fb = $("fb");
+  // second shot always needs one retry, to show in-flow correction
+  if(S.shotIndex===1 && !S.retried){
+    S.retried = true; S.retriedEver = true;
+    fb.innerHTML = `<div class="feedback retry">The number isn't readable. Move a step closer and hold steady, then capture again.</div>`;
+    log("Capture rejected in flow: number not readable", "w");
+    return;
+  }
+  S.shotsDone.push(per.shots[S.shotIndex].t);
+  log("Captured: "+per.shots[S.shotIndex].t+" · GPS and time stamped", "g");
+  S.shotIndex++;
+  S.retried = false;
+  if(S.shotIndex >= per.shots.length){
+    S.screen = "walk";
+  }
+  render();
+}
+
+function runScoring(){
+  const steps = ["Captured live on this device","Location matches the address you gave",
+                 "All required views are readable","No sign of tampering or reuse"];
+  let i = 0;
+  const iv = setInterval(()=>{
+    const items = document.querySelectorAll("#checks li");
+    if(items[i]){
+      items[i].classList.remove("pending");
+      items[i].querySelector(".tick").classList.add("done");
+      items[i].querySelector(".tick").textContent = "\u2713";
+      log("Check passed: "+steps[i], "g");
+    }
+    i++;
+    if(i>=4){
+      clearInterval(iv);
+      // the engine grades every part of the Base, not just pass/fail
+      S.baseBreak = {
+        readable: S.retriedEver ? 84 : 92,
+        gps: S.addrMatch==="yes" ? 94 : 88,
+        trail: 90
+      };
+      const b = S.baseBreak;
+      S.score = Math.round((b.readable + b.gps + b.trail)/3) - (S.addrMatch==="yes" ? 4 : 20);
+      log("Base graded: readability "+b.readable+", GPS "+b.gps+", trail "+b.trail, "hi");
+      log("Confidence score: "+S.score+"/100", "hi");
+      setTimeout(()=>{ S.screen="outcome"; render(); }, 500);
+    }
+  }, 650);
+}
+
+/* ---------------- failure triggers ---------------- */
+function guardCapture(){
+  if(!["capture","walk"].includes(S.screen)){
+    log("Try this during capture", "w");
+    return false;
+  }
+  return true;
+}
+function failDeny(){ if(!guardCapture())return; log("Camera permission denied","w"); S.screen="denied"; render(); }
+function failNetwork(){ if(!guardCapture())return; S.offline=true; log("Network lost, captures queued on device","w"); S.screen="offline"; render(); }
+function failInterrupt(){ if(!guardCapture())return; log("Session interrupted, progress saved","w"); S.screen="paused"; render(); }
+
+function reset(){
+  S = blank();
+  $("log").innerHTML = "";
+  log("Ready");
+  render();
+}
+
+reset();
+</script>
+</body>
+</html>
